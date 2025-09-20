@@ -45,7 +45,6 @@ WORD_DICT = {
         "excited",
         "bored",
         "confused",
-        "proud",
         "nervous"
     ],
 
