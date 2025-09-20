@@ -4,6 +4,8 @@ This is the **FastAPI backend** for [AI Charades](#), a game where the player pe
 
 The backend receives image frames from the React frontend, sends them to an AI model (e.g., Gemini Vision API), and returns guesses.
 
+[See Frontend](https://github.com/PennApps2025/FrontAiCharades)
+
 ---
 
 ## 🚀 Tech Stack
@@ -39,36 +41,8 @@ venv\Scripts\activate      # Windows
 pip install -r requirements.txt
 
 4. Run the Server
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 
-
-Backend runs at:
-👉 http://localhost:8000
-
-📜 Example Request
-curl -X POST "http://localhost:8000/guess" \
-  -F "file=@frame.jpg" \
-  -F "word=jumping"
-
-
-Example response:
-
-{
-  "guess": "The person looks like they are jumping."
-}
-
-🔗 Frontend Connection
-
-The React frontend (repo: FrontAiCharades
-) sends images to this backend at:
-
-http://localhost:8000/guess
-
-Make sure both repos are running simultaneously:
-
-Frontend → http://localhost:3000
-
-Backend → http://localhost:8000
 
 📂 Project Structure
 BackAiCharades/
