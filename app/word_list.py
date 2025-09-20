@@ -14,14 +14,7 @@ WORD_DICT = {
         "standing up",   # motion of standing
         "lying down",    # motion of lying down
         "stretching",    # stretching arms/body
-        "yawning",       # yawning (open mouth, cover with hand)
-        "thumbs up",
-        "thumbs down",
-        "peace sign",
-        "salute",
-        "facepalm",
-        "hands on hips",
-        "covering mouth"
+        "yawning"       # yawning (open mouth, cover with hand)
     ],
 
     # Physical activities — obvious body movement, no props required
@@ -32,7 +25,15 @@ WORD_DICT = {
         "kicking",        # kicking motion
         "balancing",      # standing on one leg
         "push-up",        # push-up motion
-        "sit-up"          # sit-up motion
+        "sit-up",          # sit-up motion
+        "punching",
+        "thumbs up",
+        "thumbs down",
+        "peace sign",
+        "salute",
+        "facepalm",
+        "hands on hips",
+        "covering mouth"
     ],
 
     # Emotions — mainly facial expressions, easy for VLM to classify
