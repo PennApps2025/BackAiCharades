@@ -21,8 +21,9 @@ def generate_prompt(word_to_guess: str, choices: list) -> str:
     
     return f"""
 You are an expert at the game of charades.
-Based on the following image, which of these words is the person trying to act out?
-Your answer must be exactly one word from the list provided.
+Based on the following image, choose the word from the list that best matches the action the person is acting out.
+If one of the words clearly fits, respond with that word exactly. 
+If none of the words seem like a reasonable match, respond with "None".
 
 Choices: {', '.join(choices)}
 """
