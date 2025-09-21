@@ -1,6 +1,6 @@
-# 🤖 AI Charades - Backend
+# 🤖 CharAIdes - Backend
 
-This is the **FastAPI backend** for [AI Charades](#), a game where the player performs actions on webcam and an AI opponent tries to guess in real time.  
+This is the FastAPI backend for **CharAIdes**, a game where the player performs actions on webcam and an AI opponent tries to guess in real time.  
 
 The backend receives image frames from the React frontend, sends them to an AI model (e.g., Gemini Vision API), and returns guesses.
 
