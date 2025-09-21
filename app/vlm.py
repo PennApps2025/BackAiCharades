@@ -10,7 +10,7 @@ if not API_KEY:
     raise ValueError("GEMINI_API_KEY not found in .env file")
 
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-2.0-flash-lite')
+model = genai.GenerativeModel('gemini-2.0-flash')
 # -------------
 
 def generate_prompt(word_to_guess: str, choices: list) -> str:
@@ -21,7 +21,7 @@ def generate_prompt(word_to_guess: str, choices: list) -> str:
     
     return f"""
 You are an AI playing charades. Based on the image provided, pick the word from the list that best matches
-the action the person is acting out. Only pick a word if you are at least 50% confident. 
+the action the person is acting out. Only pick a word if you are more than 40% confident. 
 If you pick a word, also explain in 1 short sentence why you chose it. 
 If none of the words seem like a reasonable match, respond with a short "not sure" style message. 
 Make it playful and casual. 
