@@ -64,7 +64,7 @@ def get_leaderboard():
         SELECT username, score 
         FROM leaderboard 
         ORDER BY score DESC
-        LIMIT 10
+        LIMIT 5
     """)
     rows = cur.fetchall()
     conn.close()

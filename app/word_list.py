@@ -10,7 +10,6 @@ WORD_DICT = {
         "pointing",      # pointing with finger
         "shrugging",     # shrugging shoulders
         "sitting down",  # motion of sitting
-        "standing up",   # motion of standing
         "stretching",    # stretching arms/body
         "yawning",       # yawning (open mouth, cover with hand)
         "kicking",        # kicking motion
@@ -28,7 +27,6 @@ WORD_DICT = {
     "Emotions": [
         "happy",
         "sad",
-        "angry",
         "surprised",
         "scared",
         "excited",
@@ -49,6 +47,5 @@ WORD_DICT = {
         "waiter/waitress",
         "boxer",
         "swimmer",
-        "rock climber"
     ]
 }
