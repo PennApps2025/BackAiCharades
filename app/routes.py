@@ -5,6 +5,8 @@ from app.vlm import vlm_guess
 import random
 from PIL import Image
 import io
+from app.models import Score
+from app.database import submit_score, get_leaderboard as db_get_leaderboard
 
 router = APIRouter()
 
@@ -83,3 +85,14 @@ async def guess(file: UploadFile = File(...), word: str = Form(...), choices: st
     print("Original response: " + vlm_response)
 
     return {"guess": final_guess, "result": result, "response": vlm_response}
+
+@router.post("/leaderboard")
+def post_score(score: Score):
+    submit_score(score)
+    return {"message": "Score submitted"}
+
+@router.get("/leaderboard")
+def get_leaderboard():
+    # Call the database helper to fetch the leaderboard
+    data = db_get_leaderboard()
+    return data

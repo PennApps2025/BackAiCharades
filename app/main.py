@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import router
+from app.database import init_db
 
 app = FastAPI()
+init_db()
 
 @app.get("/")
 def read_root():
