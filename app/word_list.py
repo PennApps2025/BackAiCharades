@@ -40,7 +40,6 @@ WORD_DICT = {
     # Occupations — chosen so they can be acted out with gestures only
     "Occupations": [
         "ballet dancer",    # dancing motion
-        "singer",    # singing or holding mic gesture
         "teacher",   # pointing/explaining gesture
         "doctor",    # checking pulse or listening motion
         "pianist",  # playing piano
