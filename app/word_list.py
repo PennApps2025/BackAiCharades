@@ -46,23 +46,9 @@ WORD_DICT = {
         "guitarist", # playing guitar
         "photographer",
         "solider",
-        "waiter / waitress",
+        "waiter/waitress",
         "boxer",
         "swimmer",
         "rock climber"
-    ],
-
-    "Animals": [
-        "bird",
-        "fish",
-        "rabbit",
-        "horse",
-        "frog",
-        "elephant",
-        "monkey",
-        "bear",
-        "giraffe",
-        "kangaroo",
-        "snake"
     ]
 }
