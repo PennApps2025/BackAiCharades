@@ -39,6 +39,15 @@ def reset_db():
             score INTEGER NOT NULL
         )
     """)
+
+    # Insert sample data
+    sample_data = [
+        ('Aaron', 5),
+        ('John', 3),
+        ('GEMINI', 6)
+    ]
+    cur.executemany("INSERT INTO leaderboard (username, score) VALUES (?, ?)", sample_data)
+
     conn.commit()
     conn.close()
     print(f"reset_db: database reset")
