@@ -78,10 +78,8 @@ async def guess(file: UploadFile = File(...), word: str = Form(...), choices: st
         final_guess = matched_word
     else:
         result = "undetected"
-        final_guess = "No recognizable action detected"
+        final_guess = "None"
 
-    # success/fail logic
-    # We check if the target word is IN the AI's response for more flexibility
-    result = "success" if word.lower() in vlm_response.lower() else "fail"
+    print("Original response: " + vlm_response)
 
-    return {"guess": final_guess, "result": result}
+    return {"guess": final_guess, "result": result, "response": vlm_response}
