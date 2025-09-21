@@ -31,7 +31,6 @@ WORD_DICT = {
         "thumbs down",
         "peace sign",
         "salute",
-        "facepalm",
         "hands on hips",
         "covering mouth"
     ],
