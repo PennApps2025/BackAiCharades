@@ -20,10 +20,12 @@ def generate_prompt(word_to_guess: str, choices: list) -> str:
     random.shuffle(choices)
     
     return f"""
-You are an expert at the game of charades.
-Based on the following image, choose the word from the list that best matches the action the person is acting out.
-If one of the words clearly fits, respond with that word exactly. 
-If none of the words seem like a reasonable match, respond with "None".
+You are an AI playing charades. Based on the image provided, pick the word from the list that best matches
+the action the person is acting out. Only pick a word if you are at least 50% confident. 
+If you pick a word, also explain in 1 short sentence why you chose it. 
+If none of the words seem like a reasonable match, respond with a short "not sure" style message. 
+Make it playful and casual. 
+Do not use Markdown formatting. Your response should be plain text only.  
 
 Choices: {', '.join(choices)}
 """
@@ -43,9 +45,7 @@ def vlm_guess(image_bytes: bytes, mime_type: str, word: str, all_choices: list) 
     try:
         # Make the API call
         response = model.generate_content([prompt, image_part])
-        # Clean up the response text
-        result_text = response.text.strip().lower()
-        return result_text
+        return response.text
     except Exception as e:
         print(f"Gemini API call error: {e}")
         return "error"
