@@ -6,9 +6,6 @@ CharAIdes is a real-time, AI-powered charades experience where a player acts out
 
 [See Frontend](https://github.com/PennApps2025/FrontAiCharades)
 
-## 💡 Inspiration
-We wanted to blend physical play with modern AI: take classic charades and let an AI act as the judge in real-time. That makes the game playable anywhere — solo, remote with friends, or in group settings without a human judge.
-
 ## ✅ What it does
 - Receives live webcam frames and a target word, then invokes Gemini Vision to guess the action
 - Returns a structured result indicating the model’s guess and whether it matches the target
@@ -28,31 +25,9 @@ We wanted to blend physical play with modern AI: take classic charades and let a
 - Backend: FastAPI (Python), Uvicorn (ASGI)
 - Storage: SQLite (via Python’s sqlite3)
 - Imaging: Pillow
-- AI: google-generativeai (Gemini Vision)
+- AI: Gemini 2.0 Flash Lite
 - Uploads: python-multipart
 - Optional: python-dotenv for local env loading
-
-## 🛠 How we built it
-- Defined REST endpoints in FastAPI for `/guess` and `/leaderboard`
-- Preprocessed images (resize/convert) and called Gemini Vision through google-generativeai
-- Parsed AI responses and matched them against a curated word list with case-insensitive checks
-- Implemented SQLite persistence + simple seeding for quick local development and testing
-
-## ⚠️ Challenges & fixes
-- Debouncing AI API calls — throttled requests to avoid rate limits under rapid frame submissions
-- AI guess strictness — refined prompts and post-processing to constrain outputs to curated words
-- Image variability — normalized inputs (size/format) to stabilize model responses
-- Performance — reduced payload size and ensured minimal per-request preprocessing overhead
-
-## 🏆 Accomplishments
-- Seamless generative-AI interpretation of human gestures in near real-time
-- Stable, predictable backend API with low-latency image handling
-- Reliable leaderboard flow with simple local persistence
-
-## 📚 What we learned
-- Real-time vision + AI benefits from careful input normalization and rate control
-- Prompt design and post-processing are key for constrained classification tasks
-- Small optimizations (throttling, JPEG normalization) meaningfully improve responsiveness
 
 ## 🔭 What's next
 - Expand the word list with nuanced gestures and actions
