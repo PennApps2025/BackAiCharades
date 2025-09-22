@@ -32,8 +32,6 @@ We wanted to blend physical play with modern AI: take classic charades and let a
 - Uploads: python-multipart
 - Optional: python-dotenv for local env loading
 
-(Frontend repo: https://github.com/PennApps2025/FrontAiCharades)
-
 ## 🛠 How we built it
 - Defined REST endpoints in FastAPI for `/guess` and `/leaderboard`
 - Preprocessed images (resize/convert) and called Gemini Vision through google-generativeai
