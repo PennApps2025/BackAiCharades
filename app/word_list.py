@@ -43,7 +43,7 @@ WORD_DICT = {
         "pianist",  # playing piano
         "guitarist", # playing guitar
         "photographer",
-        "solider",
+        "soldier",  # 오타 수정: solider → soldier
         "waiter/waitress",
         "boxer",
         "swimmer",

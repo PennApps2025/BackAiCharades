@@ -82,8 +82,6 @@ async def guess(file: UploadFile = File(...), word: str = Form(...), choices: st
         result = "undetected"
         final_guess = "None"
 
-    print("Original response: " + vlm_response)
-
     return {"guess": final_guess, "result": result, "response": vlm_response}
 
 @router.post("/leaderboard")

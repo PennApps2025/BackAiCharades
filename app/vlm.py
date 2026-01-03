@@ -29,12 +29,30 @@ if not API_KEYS:
 
 print(f"📊 Total API Keys loaded: {len(API_KEYS)}")
 
-# 모델 우선순위 (각 모델은 독립적인 20 RPD 할당량)
+# 모델 우선순위 (무료 플랜 비전 모델)
+# 
+# 시스템 설정: 10초 캡처 간격 = 6 calls/min
+# 게임당 예상: 4-5회 API 호출 (45초 게임)
+# 
+# 사용 가능한 비전 모델:
+# • gemini-2.5-flash-lite: 10 RPM, 20 RPD - 빠름 (300-800ms)
+# • gemini-2.5-flash: 5 RPM, 20 RPD
+# 
+# 전략: 모델 우선 순회
+# 1. 모든 키에서 flash-lite 시도 (Key#1, #2, #3)
+# 2. 모든 flash-lite 소진 시 flash 시도 (Key#1, #2, #3)
+# 
+# 3개 API 키 × 2개 모델 × 20 RPD = 120 calls/day (하루 24게임)
 MODEL_PRIORITY = [
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
-    "gemini-3-flash"
+    "gemini-2.5-flash-lite",  # 모든 키에서 먼저 시도
+    "gemini-2.5-flash",       # flash-lite 소진 후 사용
+    "gemini-robotics-er-1.5-preview"
 ]
+
+# 마지막 성공한 조합 기억 (스마트 로테이션)
+# 초기값: None으로 시작하여 첫 성공 시 학습
+last_successful_key_index = None
+last_successful_model = None
 # -------------
 
 def generate_prompt(word_to_guess: str, choices: list) -> str:
@@ -56,15 +74,44 @@ Choices: {', '.join(choices)}
 
 def vlm_guess(image_bytes: bytes, mime_type: str, word: str, all_choices: list) -> str:
     """
-    Calls the Gemini API with multi-model fallback and API key rotation.
-    Tries all combinations: Key1+Model1, Key1+Model2, Key1+Model3, Key2+Model1, ...
+    Calls the Gemini API with smart rotation (remembers last successful combination).
+    Tries last successful combo first, then falls back to sequential search.
     """
+    global last_successful_key_index, last_successful_model
+    
     # Generate prompt
     prompt = generate_prompt(word, all_choices)
     
-    # 모든 API 키와 모델 조합 시도
-    for key_index, api_key in enumerate(API_KEYS, 1):
-        for model_name in MODEL_PRIORITY:
+    # 마지막 성공 조합이 있으면 먼저 시도 (스마트 로테이션)
+    if last_successful_key_index is not None and last_successful_model is not None:
+        try:
+            key_index = last_successful_key_index
+            model_name = last_successful_model
+            api_key = API_KEYS[key_index - 1]
+            
+            print(f"🎯 Smart retry: Key#{key_index} + {model_name}")
+            
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel(model_name)
+            image = Image.open(io.BytesIO(image_bytes))
+            response = model.generate_content([prompt, image])
+            
+            # 성공한 조합 기억
+            last_successful_key_index = key_index
+            last_successful_model = model_name
+            
+            print(f"✅ Success: Key#{key_index} + {model_name}")
+            print(f"Original response: {response.text}")
+            return response.text
+            
+        except Exception as e:
+            error_msg = str(e)
+            print(f"❌ Last combo failed: {error_msg[:100]}")
+            print("⚠️ Switching to next available combo...")
+    
+    # 모든 API 키와 모델 조합 시도 (모델 우선 순회)
+    for model_name in MODEL_PRIORITY:
+        for key_index, api_key in enumerate(API_KEYS, 1):
             try:
                 print(f"Trying: Key#{key_index} + {model_name}")
                 
@@ -78,6 +125,10 @@ def vlm_guess(image_bytes: bytes, mime_type: str, word: str, all_choices: list) 
                 # Make API call
                 response = model.generate_content([prompt, image])
                 
+                # 성공한 조합 기억
+                last_successful_key_index = key_index
+                last_successful_model = model_name
+                
                 print(f"✅ Success: Key#{key_index} + {model_name}")
                 print(f"Original response: {response.text}")
                 return response.text
@@ -89,10 +140,9 @@ def vlm_guess(image_bytes: bytes, mime_type: str, word: str, all_choices: list) 
                 # Check if it's a quota error
                 if "quota" in error_msg.lower() or "429" in error_msg:
                     print("⚠️ Quota exceeded, trying next...")
-                    continue  # Try next model/key combination
+                    continue
                 else:
-                    # Other errors - continue to next combination
-                    print(f"⚠️ Other error, trying next...")
+                    print("⚠️ Other error, trying next...")
                     continue
     
     # All attempts failed
