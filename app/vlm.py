@@ -45,8 +45,8 @@ print(f"📊 Total API Keys loaded: {len(API_KEYS)}")
 # 3개 API 키 × 2개 모델 × 20 RPD = 120 calls/day (하루 24게임)
 MODEL_PRIORITY = [
     "gemini-2.5-flash-lite",  # 모든 키에서 먼저 시도
-    "gemini-2.5-flash",       # flash-lite 소진 후 사용
-    "gemini-robotics-er-1.5-preview"
+#     "gemini-2.5-flash",       # flash-lite 소진 후 사용
+#     "gemini-robotics-er-1.5-preview"
 ]
 
 # 마지막 성공한 조합 기억 (스마트 로테이션)

@@ -158,6 +158,13 @@ async def guess(file: UploadFile = File(...), word: str = Form(...), choices: st
         all_choices=choices_list
     )
 
+    # Check if quota exceeded
+    if vlm_response == "quota_exceeded":
+        raise HTTPException(
+            status_code=429,
+            detail="Thanks for playing! 🎮 This demo has a daily limit to keep it free for everyone. We've reached today's limit, but you can try again tomorrow! See you then! ⏰"
+        )
+
     clean_response = vlm_response.strip().lower()
 
     matched_word = None
