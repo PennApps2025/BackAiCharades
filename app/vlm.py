@@ -2,15 +2,39 @@
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
+from PIL import Image
+import io
 
 # --- Setup ---
 load_dotenv()
-API_KEY = os.getenv("GEMINI_API_KEY")
-if not API_KEY:
-    raise ValueError("GEMINI_API_KEY not found in .env file")
 
-genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-2.0-flash')
+# API 키 동적 로드 (GEMINI_API_KEY, GEMINI_API_KEY_2, GEMINI_API_KEY_3, ...)
+API_KEYS = []
+key_index = 1
+while True:
+    if key_index == 1:
+        key = os.getenv("GEMINI_API_KEY")
+    else:
+        key = os.getenv(f"GEMINI_API_KEY_{key_index}")
+    
+    if key:
+        API_KEYS.append(key)
+        print(f"✅ Loaded API Key #{key_index}")
+        key_index += 1
+    else:
+        break  # No more keys found
+
+if not API_KEYS:
+    raise ValueError("No GEMINI_API_KEY found in .env file. Add at least GEMINI_API_KEY=your_key")
+
+print(f"📊 Total API Keys loaded: {len(API_KEYS)}")
+
+# 모델 우선순위 (각 모델은 독립적인 20 RPD 할당량)
+MODEL_PRIORITY = [
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-3-flash"
+]
 # -------------
 
 def generate_prompt(word_to_guess: str, choices: list) -> str:
@@ -32,20 +56,45 @@ Choices: {', '.join(choices)}
 
 def vlm_guess(image_bytes: bytes, mime_type: str, word: str, all_choices: list) -> str:
     """
-    Calls the Gemini Pro Vision API with preprocessed image bytes and returns the AI's guess.
+    Calls the Gemini API with multi-model fallback and API key rotation.
+    Tries all combinations: Key1+Model1, Key1+Model2, Key1+Model3, Key2+Model1, ...
     """
-    image_part = {
-        "mime_type": mime_type,
-        "data": image_bytes
-    }
-
-    # Generate a better prompt with multiple choices
+    # Generate prompt
     prompt = generate_prompt(word, all_choices)
-
-    try:
-        # Make the API call
-        response = model.generate_content([prompt, image_part])
-        return response.text
-    except Exception as e:
-        print(f"Gemini API call error: {e}")
-        return "error"
+    
+    # 모든 API 키와 모델 조합 시도
+    for key_index, api_key in enumerate(API_KEYS, 1):
+        for model_name in MODEL_PRIORITY:
+            try:
+                print(f"Trying: Key#{key_index} + {model_name}")
+                
+                # Configure API with current key
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel(model_name)
+                
+                # Prepare image
+                image = Image.open(io.BytesIO(image_bytes))
+                
+                # Make API call
+                response = model.generate_content([prompt, image])
+                
+                print(f"✅ Success: Key#{key_index} + {model_name}")
+                print(f"Original response: {response.text}")
+                return response.text
+                
+            except Exception as e:
+                error_msg = str(e)
+                print(f"❌ Key#{key_index} + {model_name}: {error_msg[:100]}")
+                
+                # Check if it's a quota error
+                if "quota" in error_msg.lower() or "429" in error_msg:
+                    print("⚠️ Quota exceeded, trying next...")
+                    continue  # Try next model/key combination
+                else:
+                    # Other errors - continue to next combination
+                    print(f"⚠️ Other error, trying next...")
+                    continue
+    
+    # All attempts failed
+    print("❌ All API keys and models exhausted")
+    return "quota_exceeded"
