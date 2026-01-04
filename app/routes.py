@@ -1,5 +1,5 @@
 # routes.py
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Request
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from app.word_list import WORD_DICT
 from app.vlm import vlm_guess
 import random
@@ -7,116 +7,8 @@ from PIL import Image
 import io
 from app.models import Score
 from app.database import submit_score, get_leaderboard as db_get_leaderboard
-import uuid
-from datetime import datetime, timedelta
 
 router = APIRouter()
-
-# Session management with IP validation
-active_session = {
-    "session_id": None,
-    "started_at": None,
-    "expires_at": None,
-    "ip_address": None  # Track client IP for security
-}
-SESSION_TIMEOUT = 60  # 60 seconds timeout
-
-@router.post("/start_session")
-def start_session(request: Request):
-    """
-    Acquire a game session. Only one player can play at a time.
-    Stores client IP for security validation.
-    """
-    global active_session
-    now = datetime.now()
-    client_ip = request.client.host
-    
-    # Check if there's an active session that hasn't expired
-    if active_session["session_id"] and active_session["expires_at"]:
-        if now < active_session["expires_at"]:
-            raise HTTPException(
-                status_code=409, 
-                detail="Game in progress. Please wait."
-            )
-    
-    # Create new session with IP tracking
-    session_id = str(uuid.uuid4())
-    active_session["session_id"] = session_id
-    active_session["started_at"] = now
-    active_session["expires_at"] = now + timedelta(seconds=SESSION_TIMEOUT)
-    active_session["ip_address"] = client_ip
-    
-    print(f"🎮 Session started: {session_id[:8]} from IP: {client_ip}")
-    return {"session_id": session_id, "expires_at": active_session["expires_at"].isoformat()}
-
-@router.post("/heartbeat")
-def heartbeat(session_id: str = Form(...), request: Request = None):
-    """
-    Keep the session alive by updating expiration time.
-    Validates both session_id and client IP for security.
-    """
-    global active_session
-    now = datetime.now()
-    client_ip = request.client.host
-    
-    # Validate both session_id and IP address
-    if active_session["session_id"] == session_id:
-        if active_session["ip_address"] != client_ip:
-            print(f"⚠️ IP mismatch: session IP {active_session['ip_address']}, request IP {client_ip}")
-            raise HTTPException(
-                status_code=403, 
-                detail="Session validation failed"
-            )
-        
-        # Extend session
-        active_session["expires_at"] = now + timedelta(seconds=SESSION_TIMEOUT)
-        return {"message": "Session extended", "expires_at": active_session["expires_at"].isoformat()}
-    
-    raise HTTPException(status_code=404, detail="Session not found")
-
-@router.post("/end_session")
-def end_session(session_id: str = Form(...), request: Request = None):
-    """
-    Release the game session.
-    Validates both session_id and client IP for security.
-    """
-    global active_session
-    client_ip = request.client.host
-    
-    if active_session["session_id"] == session_id:
-        # Validate IP address
-        if active_session["ip_address"] != client_ip:
-            print(f"⚠️ IP mismatch on end_session: session IP {active_session['ip_address']}, request IP {client_ip}")
-            raise HTTPException(
-                status_code=403,
-                detail="Session validation failed"
-            )
-        
-        print(f"✅ Session ended: {session_id[:8]} from IP: {client_ip}")
-        active_session["session_id"] = None
-        active_session["started_at"] = None
-        active_session["expires_at"] = None
-        active_session["ip_address"] = None
-        return {"message": "Session ended"}
-    
-    return {"message": "Session not found or already ended"}
-
-@router.get("/check_session")
-def check_session():
-    """
-    Check if a game session is currently active.
-    """
-    global active_session
-    now = datetime.now()
-    
-    if active_session["session_id"] and active_session["expires_at"]:
-        if now < active_session["expires_at"]:
-            return {
-                "active": True,
-                "expires_at": active_session["expires_at"].isoformat()
-            }
-    
-    return {"active": False}
 
 @router.get("/get_word")
 def get_word(category: str = None):

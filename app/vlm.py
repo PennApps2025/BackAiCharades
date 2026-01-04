@@ -4,6 +4,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from PIL import Image
 import io
+from datetime import datetime, timezone, timedelta
 
 # --- Setup ---
 load_dotenv()
@@ -50,9 +51,38 @@ MODEL_PRIORITY = [
 ]
 
 # 마지막 성공한 조합 기억 (스마트 로테이션)
-# 초기값: None으로 시작하여 첫 성공 시 학습
+# Gemini API quota는 매일 PST 자정(UTC-8)에 리셋됨
+# 자정이 지나면 첫 번째 key/model로 다시 시작
 last_successful_key_index = None
 last_successful_model = None
+last_reset_date = None  # 마지막으로 리셋한 날짜 (PST 기준)
+
+def get_pst_date():
+    """현재 PST(Pacific Standard Time, UTC-8) 날짜를 반환"""
+    pst = timezone(timedelta(hours=-8))
+    return datetime.now(pst).date()
+
+def should_reset_quota():
+    """
+    Quota 리셋이 필요한지 확인 (PST 자정 기준)
+    Returns: True if we're in a new day (PST), False otherwise
+    """
+    global last_reset_date
+    current_pst_date = get_pst_date()
+    
+    if last_reset_date is None:
+        # 첫 실행
+        last_reset_date = current_pst_date
+        return False
+    
+    if current_pst_date > last_reset_date:
+        # 새로운 날짜 (PST 자정이 지남)
+        print(f"🔄 New day detected (PST): {current_pst_date}")
+        print("   Resetting to Key#1 + first model")
+        last_reset_date = current_pst_date
+        return True
+    
+    return False
 # -------------
 
 def generate_prompt(word_to_guess: str, choices: list) -> str:
@@ -75,9 +105,15 @@ Choices: {', '.join(choices)}
 def vlm_guess(image_bytes: bytes, mime_type: str, word: str, all_choices: list) -> str:
     """
     Calls the Gemini API with smart rotation (remembers last successful combination).
+    Automatically resets to Key#1 + first model when PST date changes.
     Tries last successful combo first, then falls back to sequential search.
     """
     global last_successful_key_index, last_successful_model
+    
+    # PST 자정이 지났는지 확인하고 필요시 리셋
+    if should_reset_quota():
+        last_successful_key_index = None
+        last_successful_model = None
     
     # Generate prompt
     prompt = generate_prompt(word, all_choices)
